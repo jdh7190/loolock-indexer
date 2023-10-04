@@ -4,6 +4,8 @@
 
 The LooLockJS indexer is a NodeJS program that Bitcoin transactions containing a lockup script prefix, and adhere to the MAP protocol.
 
+The indexer requires an instance of [mysql](https://www.mysql.com/) running on the same machine the indexer runs on.
+
 ### Installation
 
 Clone this repository, then run the command:
@@ -33,9 +35,13 @@ Start the Express server that hosts the endpoints:
 
 This will initialize the database with 2 tables, locks and lockcrawl
 
-lockcrawl manages the synced block height and hash. The indexer will start from this height upon running.
+lockcrawl manages the synced block height and hash. The indexer will start from this height if the lockcrawl table is empty.
 
-locks contains each lock record, with its BSocial data, satoshis locked, block height and more.
+locks contains each lock record, with its BSocial data, satoshis locked, until which block height and more.
+
+Create a [Subscription on JungleBus](https://junglebus.gorillapool.io/junglebus/subscriptions), with Output types set to map.
+
+Set this value in the MAP_SUBSCRIPTION field in the .env file before continuing.
 
 Once complete run the JungleBus indexer:
 

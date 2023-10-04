@@ -1,0 +1,22 @@
+{
+  "name": "lockidx",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "idx": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@gorillapool/js-junglebus": "^0.4.1",
+    "bsv": "^1.5.6",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mysql": "^2.18.1",
+    "node-fetch": "^2.7.0"
+  }
+}

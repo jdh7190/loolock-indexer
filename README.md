@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The LooLockJS indexer is a NodeJS program that Bitcoin transactions containing a lockup script prefix, and adhere to the MAP protocol.
+The LooLockJS indexer is a NodeJS program that Bitcoin transactions containing a lockup script prefix, and adhere to the [MAP](https://map.sv) protocol.
 
 The indexer requires an instance of [mysql](https://www.mysql.com/) running on the same machine the indexer runs on.
 
@@ -33,11 +33,11 @@ Start the Express server that hosts the endpoints:
 
 ```node server```
 
-This will initialize the database with 2 tables, locks and lockcrawl
+This will initialize the database with 4 tables, locks, likes, replies and lockcrawl
 
 lockcrawl manages the synced block height and hash. The indexer will start from this height if the lockcrawl table is empty.
 
-locks contains each lock record, with its BSocial data, satoshis locked, until which block height and more.
+locks, likes and replies contains locking BSocial records, with its content, context, satoshis locked, until which block height and more.
 
 Create a [Subscription on JungleBus](https://junglebus.gorillapool.io/junglebus/subscriptions), with Output types set to map.
 
@@ -49,7 +49,7 @@ Once complete run the JungleBus indexer:
 
 ### Database Schema
 
-lockcrawl
+locks
 
 | Name | Description | Data Type | Example |
 | ----------- | ----------- | ----------- | ----------- |
@@ -64,7 +64,16 @@ lockcrawl
 | likedTxid | LooLiked txid | varchar(64) | |
 | contextTx | Replied txid, or other context | varchar(64) | |
 
-locks
+lockcrawl
+
+| Name | Description | Data Type | Example |
+| ----------- | ----------- | ----------- | ----------- |
+| hash | Block height | varchar(64) |  |
+| height | Block hash | int | 1000000 |
+
+replies
+
+likes
 
 ### Endpoints
 

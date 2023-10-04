@@ -98,6 +98,37 @@ const initializeDB = async() => {
         PRIMARY KEY (id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`;
     await sqlPromise(LOCK_CRAWL_INIT_STMT, 'FAILED TO CREATE LOCKCRAWL TABLE', '', dbCon);
+    const LIKE_TABLE_INIT_STMT = `CREATE TABLE IF NOT EXISTS likes (
+        id int NOT NULL AUTO_INCREMENT,
+        txid varchar(64) NOT NULL,
+        likedTxid varchar(84) DEFAULT NULL,
+        emoji varchar(24) DEFAULT NULL,
+        hexcode varchar(45) DEFAULT NULL,
+        address varchar(36) DEFAULT NULL,
+        satoshis bigint DEFAULT NULL,
+        txBlockHeight int DEFAULT NULL,
+        paymail varchar(100) DEFAULT NULL,
+        lockHeight int DEFAULT NULL,
+        app varchar(100) DEFAULT NULL,
+        PRIMARY KEY (id,txid),
+        UNIQUE KEY txid_UNIQUE (txid)
+      ) ENGINE=InnoDB AUTO_INCREMENT=7400 DEFAULT CHARSET=utf8mb4`;
+    await sqlPromise(LIKE_TABLE_INIT_STMT, 'FAILED TO CREATE LIKE TABLE', '', dbCon);
+    const REPLY_TABLE_INIT_STMT = `CREATE TABLE IF NOT EXISTS replies (
+        id int NOT NULL AUTO_INCREMENT,
+        txid varchar(64) NOT NULL,
+        repliedTxid varchar(64) DEFAULT NULL,
+        content longtext,
+        txBlockHeight int DEFAULT NULL,
+        lockHeight int DEFAULT NULL,
+        address varchar(36) DEFAULT NULL,
+        satoshis bigint DEFAULT NULL,
+        paymail varchar(100) DEFAULT NULL,
+        app varchar(100) DEFAULT NULL,
+        PRIMARY KEY (id,txid),
+        UNIQUE KEY txid_UNIQUE (txid)
+      ) ENGINE=InnoDB AUTO_INCREMENT=18873 DEFAULT CHARSET=utf8mb4;`
+    await sqlPromise(REPLY_TABLE_INIT_STMT, 'FAILED TO CREATE REPLY TABLE', '', dbCon)
     console.log(`DATABASE ${process.env.DATABASE_NAME} INITIALIZED`);
     con.destroy();
     dbCon.destroy();

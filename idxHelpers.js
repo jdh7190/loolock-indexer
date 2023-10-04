@@ -52,9 +52,9 @@ const idxTx = async(rawtx, blockHeight, blockTime) => {
             const contentText = replaceAll(content, "'", "''");
             const replyTxid = getValue(strArr, 'tx', true);
             if (replyTxid.length === 64) {
-                const flds = ['content', 'txid', 'contextTx', 'address', 'app', 'paymail', 'satoshis', 'lockHeight', 'txBlockHeight'];
+                const flds = ['content', 'txid', 'repliedTxid', 'address', 'app', 'paymail', 'satoshis', 'lockHeight', 'txBlockHeight'];
                 const vls = [contentText, txid, replyTxid, address, app, paymail, satoshis, lockBlock, blockHeight]
-                const stmt = sqlDB.insert('locks', flds, vls, true);
+                const stmt = sqlDB.insert('replies', flds, vls, true);
                 await sqlDB.sqlPromise(stmt, 'Failed to insert reply to lock post.', '', pool);
             } else {
                 const flds = ['content', 'txid', 'address', 'app', 'paymail', 'satoshis', 'lockHeight', 'txBlockHeight'];
@@ -76,7 +76,7 @@ const idxTx = async(rawtx, blockHeight, blockTime) => {
             console.log(txt)
             const flds = ['likedTxid', 'txid', 'app', 'address', 'satoshis', 'lockHeight', 'txBlockHeight', 'paymail'];
             const vls = [likedTxid, txid, app, address, satoshis, lockBlock, blockHeight, paymail]
-            const stmt = sqlDB.insert('locks', flds, vls, true);
+            const stmt = sqlDB.insert('likes', flds, vls, true);
             await sqlDB.sqlPromise(stmt, 'Failed to insert lock.', '', pool);
             return;
         }

@@ -24,7 +24,7 @@ Create a .env file with the following parameters (THIS IS MANDATORY):
 | DATABASE_PASSWORD | mysql password for DATABASE_USER | p@ssw0rd |
 | SERVER_PORT | PORT that server.js runs on | 9007 |
 | MAP_SUBSCRIPTION | JungleBus Subscription ID to fetch MAP Bitcoin transactions | |
-| API_URL | JungleBus Subscription ID to fetch MAP Bitcoin transactions | |
+| API_URL | HTTP URL where server is running | |
 | BLOCK_HEIGHT | Block height to populate the lockcrawl table with upon initial indexing | 808839 | 
 
 ### Setup
@@ -75,13 +75,19 @@ replies
 
 likes
 
+lockusers
+
 ### Endpoints
 
 To be documented -
 
 ### Special steps
 
-#### BSocial implementation
+Once synced to the current block height, please execute the following steps IN ORDER -
+
+1. #### Stop the indexer
+
+2. #### BSocial implementation
 
 Locks started adhering to the BSocial protocol from block height 808839.
 
@@ -89,7 +95,17 @@ The locktx_before_BSocial.csv contains all records before this point, and is com
 
 Import it using a client such as mysql workbench, or leverage the code in the update.js file.
 
-#### Paymail mapping
+3. #### Update paymail on pre-BSocial records
+
+Run the following mysql script to update the missing addresses on the above records:
+
+```sql
+update locks inner join lockusers on lockusers.paymail = locks.paymail 
+SET locks.address = lockusers.address
+where locks.address is null
+```
+
+4. #### Paymail mapping
 
 The missing_paymail_tx.csv contains txids mapped to paymails from the LooLike bug in September 2023, as well as from RelayX accounts that have made on-chain transactions for where there was no on-chain paymail mapping.
 
@@ -97,32 +113,24 @@ Run the update.js file after the database is populated up to block height 812414
 
 ```node update```
 
-#### Additional paymail mapping
+5. #### Update paymails on like table
 
-Once the indexer syncs to the current block height, run the following mysql queries:
+Run the following mysql script to update the missing paymails on like records:
 
-Update missing addresses:
-
-```sql 
-UPDATE locks inner join 
-    (SELECT address, paymail FROM locks.locks 
-        where paymail is not null and paymail != '' 
-        AND address is not null group by address
-    ) lockuser 
-    ON lockuser.paymail = locks.paymail
-    SET locks.address = lockuser.address
-
+```sql
+update likes inner join lockusers on lockusers.address = likes.address
+set likes.paymail = lockusers.paymail
+where likes.paymail = ''
 ```
 
-Update missing paymails:
+6. #### Update paymails on the locks table:
 
-```sql 
-UPDATE locks inner join 
-    (SELECT address, paymail FROM locks.locks 
-        where paymail is not null and paymail != '' 
-        AND address is not null group by address
-    ) lockuser 
-    ON lockuser.paymail = locks.paymail
-    SET locks.paymail = lockuser.paymail
+Run the following mysql script to update the missing paymails on lock records:
 
+```sql
+update locks inner join lockusers on lockusers.address = locks.address
+set locks.paymail = lockusers.paymail
+where locks.paymail = ''
 ```
+
+7. #### Start the indexer again

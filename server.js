@@ -19,7 +19,9 @@ const getCrawlHeight = async() => {
     const stmt = `SELECT height from lockcrawl LIMIT 1`;
     try {
         const r = await sqlDB.sqlPromise(stmt, '', 'No record in lockcrawl found.', pool);
-        return parseInt(r[0].height);
+        if (r.length) {
+            return parseInt(r[0].height);
+        } else return null;
     } catch(e) {
         console.log(e);
         return {error:e}
@@ -189,7 +191,11 @@ app.get('/totalLocked', async(req, res) => {
         const curBlockHeight = await getCrawlHeight();
         const stmt = `select sum(satoshis) as satoshis from locks where lockHeight > ${curBlockHeight}`;
         const r = await sqlDB.sqlPromise(stmt, `Failed to retrieve total locked.`, '', pool);
-        if (r?.length) { res.send({satoshis: r[0].satoshis}) }
+        const lstmt = `select sum(satoshis) as satoshis from likes where lockHeight > ${curBlockHeight}`;
+        const l = await sqlDB.sqlPromise(lstmt, 'Failed to retreive total loolike amount', '', pool);
+        if (r?.length && l?.length) {
+            res.send({satoshis: r[0].satoshis + l[0].satoshis})
+        }
     } catch(e) {
         console.log(e);
         res.send({error:e})
@@ -199,10 +205,10 @@ app.get('/lockedLeaderboard', async(req, res) => {
     try {
         const curBlockHeight = await getCrawlHeight();
         const stmt = `select paymail, sum(satoshis) as satoshis from locks where lockHeight > ${curBlockHeight} 
-            AND paymail is not null and paymail != '' group by address order by satoshis desc`;
+            AND paymail is not null and paymail != '' group by paymail order by satoshis desc`;
         const r = await sqlDB.sqlPromise(stmt, `Failed to retrieve total locked.`, '', pool);
         const lstmt = `select paymail, sum(satoshis) as satoshis from likes where lockHeight > ${curBlockHeight} 
-            AND paymail is not null and paymail != '' group by address order by satoshis desc`;
+            AND paymail is not null and paymail != '' group by paymail order by satoshis desc`;
         const l = await sqlDB.sqlPromise(lstmt , `Failed to retrieve likes leaderboard`, '', pool);
         const arr = [...r, ...l].reduce((acc, val, i, arr) => {
             const { paymail, satoshis } = val;
@@ -211,6 +217,7 @@ app.get('/lockedLeaderboard', async(req, res) => {
             } else { acc.push({ paymail, satoshis }) }
             return acc;
          }, []);
+        arr.sort((a, b) => parseFloat(b.satoshis) - parseFloat(a.satoshis));
         if (r?.length && l?.length) {
             res.send(arr);
         }

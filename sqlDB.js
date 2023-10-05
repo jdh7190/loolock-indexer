@@ -74,6 +74,7 @@ const pool = multiple => {
 const initializeDB = async() => {
     const con = connect();
     await sqlPromise(`CREATE DATABASE IF NOT EXISTS ${process.env.DATABASE_NAME};`, `FAILED TO CREATE DATABASE ${process.env.DATABASE_NAME}`, '', con);
+    con.destroy();
     const LOCK_TABLE_INIT_STMT = `CREATE TABLE IF NOT EXISTS LOCKS (
         id int NOT NULL AUTO_INCREMENT,
         txid varchar(64) NOT NULL,
@@ -113,7 +114,7 @@ const initializeDB = async() => {
         PRIMARY KEY (id,txid),
         UNIQUE KEY txid_UNIQUE (txid)
       ) ENGINE=InnoDB AUTO_INCREMENT=7400 DEFAULT CHARSET=utf8mb4`;
-    await sqlPromise(LIKE_TABLE_INIT_STMT, 'FAILED TO CREATE LIKE TABLE', '', dbCon);
+    await sqlPromise(LIKE_TABLE_INIT_STMT, 'FAILED TO CREATE LIKES TABLE', '', dbCon);
     const REPLY_TABLE_INIT_STMT = `CREATE TABLE IF NOT EXISTS replies (
         id int NOT NULL AUTO_INCREMENT,
         txid varchar(64) NOT NULL,
@@ -128,9 +129,18 @@ const initializeDB = async() => {
         PRIMARY KEY (id,txid),
         UNIQUE KEY txid_UNIQUE (txid)
       ) ENGINE=InnoDB AUTO_INCREMENT=18873 DEFAULT CHARSET=utf8mb4;`
-    await sqlPromise(REPLY_TABLE_INIT_STMT, 'FAILED TO CREATE REPLY TABLE', '', dbCon)
+    await sqlPromise(REPLY_TABLE_INIT_STMT, 'FAILED TO CREATE REPLIES TABLE', '', dbCon);
+    const LOCKUSERS_TABLE_INIT_STMT = `CREATE TABLE IF NOT EXISTS lockusers (
+        id int NOT NULL AUTO_INCREMENT,
+        paymail varchar(100) NOT NULL,
+        address varchar(36) NOT NULL,
+        PRIMARY KEY (id,paymail,address),
+        UNIQUE KEY paymail_UNIQUE (paymail),
+        UNIQUE KEY address_UNIQUE (address)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`;
+    await sqlPromise(LOCKUSERS_TABLE_INIT_STMT, 'FAILED TO CREATE LOCKUSERS TABLE', '', dbCon)
     console.log(`DATABASE ${process.env.DATABASE_NAME} INITIALIZED`);
-    con.destroy();
+    
     dbCon.destroy();
     return;
 }

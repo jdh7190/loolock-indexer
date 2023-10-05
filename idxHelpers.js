@@ -62,6 +62,12 @@ const idxTx = async(rawtx, blockHeight, blockTime) => {
                 const stmt = sqlDB.insert('locks', flds, vls, true);
                 await sqlDB.sqlPromise(stmt, 'Failed to insert lock post.', '', pool);
             }
+            if (address?.length && paymail?.length) {
+                const flds = ['paymail', 'address'];
+                const vls = [paymail, address];
+                const stmt = sqlDB.insert('lockusers', flds, vls, true);
+                await sqlDB.sqlPromise(stmt, 'Failed to insert lock user.', '', pool);
+            }
         }
         if (type === 'like') {
             const likedTxid = getValue(strArr, 'tx');

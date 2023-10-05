@@ -126,13 +126,13 @@ app.post('/getLatestLocks', async(req, res) => {
         res.send({error:e})
     }
 })
-app.get('/getLock', async(req, res) => {
-    const { txid } = req.query;
+app.get('/getLockPost/:txid', async(req, res) => {
+    const { txid } = req.params;
     try {
         const curBlockHeight = await getCrawlHeight();
         const stmt = `SELECT locks.txid, content, count(likes.id) as likeCount, locks.paymail, (coalesce(locks.satoshis, 0) + coalesce(sum(likes.satoshis), 0)) as satoshis FROM locks
             left outer join locks.likes on locks.txid = likes.likedTxid
-        where locks.txid = '${req.query.txid}'
+        where locks.txid = '${txid}'
         group by locks.id order by locks.txBlockHeight desc`;
         const r = await sqlDB.sqlPromise(stmt, `Failed to get lock for txid ${txid}.`, `No lock for txid ${txid}.`, pool);
         const replyStmt = `SELECT replies.txid, content, count(likes.id) as likeCount, replies.paymail as paymail, (coalesce(replies.satoshis, 0) + coalesce(sum(likes.satoshis), 0)) as satoshis FROM locks.replies
@@ -196,6 +196,24 @@ app.get('/totalLocked', async(req, res) => {
         if (r?.length && l?.length) {
             res.send({satoshis: r[0].satoshis + l[0].satoshis})
         }
+    } catch(e) {
+        console.log(e);
+        res.send({error:e})
+    }
+})
+app.get('/loolocks/:txid', async(req, res) => {
+    try {
+        const { txid } = req.params;
+        const curBlockHeight = await getCrawlHeight();
+        const stmt = `SELECT likes.satoshis, likes.paymail, likes.lockHeight, likes.txid 
+            from locks
+            join likes on likes.likedTxid = locks.txid 
+            where locks.txid = '${txid}' AND likes.lockHeight > ${curBlockHeight}`;
+        const r = await sqlDB.sqlPromise(stmt, `Failed to retrieve locks for txid ${txid}.`, '', pool);
+        const lstmt = `select satoshis, paymail, lockHeight, txid from locks where txid = '${txid}'`;
+        const l = await sqlDB.sqlPromise(lstmt, `Failed to retrieve post for ${txid}`, '', pool);
+        r.push(l);
+        res.send(r);
     } catch(e) {
         console.log(e);
         res.send({error:e})

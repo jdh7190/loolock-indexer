@@ -1,9 +1,8 @@
 require('dotenv').config();
 const express = require('express');
-const fetch = require('node-fetch');
 const sqlDB = require('./sqlDB');
-const app = express(), port = process.env.SERVER_PORT;
-const DB_NAME = process.env.DATABASE_NAME;
+const app = express();
+const port = process.env.SERVER_PORT || 9007;
 app.use(express.static('public'));
 app.use(express.json({type:['application/json', 'text/plain'], limit:'50mb'}));
 app.use(express.urlencoded({extended:true, limit:'50mb'}));

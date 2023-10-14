@@ -75,7 +75,7 @@ const initializeDB = async() => {
     const con = connect();
     await sqlPromise(`CREATE DATABASE IF NOT EXISTS ${process.env.DATABASE_NAME};`, `FAILED TO CREATE DATABASE ${process.env.DATABASE_NAME}`, '', con);
     con.destroy();
-    const LOCK_TABLE_INIT_STMT = `CREATE TABLE IF NOT EXISTS LOCKS (
+    const LOCK_TABLE_INIT_STMT = `CREATE TABLE IF NOT EXISTS locks (
         id int NOT NULL AUTO_INCREMENT,
         txid varchar(64) NOT NULL,
         satoshis bigint DEFAULT NULL,
@@ -91,7 +91,7 @@ const initializeDB = async() => {
         UNIQUE KEY txid_UNIQUE (txid)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
     const dbCon = connect(process.env.DATABASE_NAME);
-    await sqlPromise(LOCK_TABLE_INIT_STMT, 'FAILED TO CREATE LOCKS TABLE', '', dbCon);
+    await sqlPromise(LOCK_TABLE_INIT_STMT, 'FAILED TO CREATE locks TABLE', '', dbCon);
     const LOCK_CRAWL_INIT_STMT = `CREATE TABLE IF NOT EXISTS lockcrawl (
         id int NOT NULL,
         height int DEFAULT NULL,

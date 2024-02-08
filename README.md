@@ -63,6 +63,7 @@ locks
 | txBlockHeight | Block height of txid | int | 809000 |
 | likedTxid | LooLiked txid | varchar(64) | |
 | contextTx | Replied txid, or other context | varchar(64) | |
+| blockIndex | Index of transaction in the block | INT | |
 
 lockcrawl
 
